@@ -1,5 +1,31 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const path = require("path");
+
+/**
+ * css-loader 被多处使用  所以在此封装成一个函数 进行复用
+ * [].filter(Boolean) 当没有传参的时候参数为undefinded 这时候可以过滤掉;
+ * @param {String} pre 其他loader
+ * @returns {Array}
+ */
+function getStyleLoader(pre) {
+  return [
+    MiniCssExtractPlugin.loader,
+    "css-loader",
+    {
+      loader: "postcss-loader",
+      options: {
+        postcssOptions: {
+          // 能解决大多数样式兼容性问题
+          // 必须写在 css-loader后面  less-loader等其他loader前面
+          plugins: ["postcss-preset-env"],
+        },
+      },
+    },
+    pre,
+  ].filter(Boolean);
+}
 
 module.exports = {
   // 入口 要求相对路径
@@ -20,19 +46,19 @@ module.exports = {
         // loader 会从右往左执行
         // css-loader 会将css生成commonjs模块到js中
         // style-loader 会在index.html中动态插入style标签 展示效果
-        use: ["style-loader", "css-loader"],
+        use: getStyleLoader(),
       },
       {
         test: /\.less$/i,
-        use: ["style-loader", "css-loader", "less-loader"],
+        use: getStyleLoader("less-loader"),
       },
       {
         test: /\.s[ac]ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: getStyleLoader("sass-loader"),
       },
       {
         test: /\.styl$/i,
-        use: ["style-loader", "css-loader", "stylus-loader"],
+        use: getStyleLoader("stylus-loader"),
       },
       // 处理图片
       {
@@ -58,7 +84,7 @@ module.exports = {
           filename: "static/media/[hash:10][ext][query]",
         },
       },
-      // babel兼容性处理
+      // babel js兼容性处理
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
@@ -77,6 +103,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "../public/index.html"),
     }),
+    // 单独打包css文件 而不是嵌入到js中
+    new MiniCssExtractPlugin({
+      filename: "static/css/main.css",
+    }),
+    // 压缩css
+    new CssMinimizerPlugin(),
   ],
 
   // 模式
