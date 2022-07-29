@@ -1,17 +1,14 @@
-const os = require("os")
+const os = require("os");
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");                     // html打包插件
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");              // css单独打包插件
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");           // css压缩插件
-const TerserWebpackPlugin = require("terser-webpack-plugin");                 // js压缩插件
-const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");       // 图片压缩插件
-
-
+const HtmlWebpackPlugin = require("html-webpack-plugin"); // html打包插件
+const MiniCssExtractPlugin = require("mini-css-extract-plugin"); // css单独打包插件
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin"); // css压缩插件
+const TerserWebpackPlugin = require("terser-webpack-plugin"); // js压缩插件
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin"); // 图片压缩插件
 
 // 获取CPU个数 为下面开启多进程使用
-const process = os.cpus().length
+const process = os.cpus().length;
 // console.log(threads);
-
 
 /**
  * css-loader 被多处使用  所以在此封装成一个函数 进行复用
@@ -44,6 +41,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "../dist"),
     filename: "static/js/main.js",
+    chunkFilename: "static/js/[name].js",
     // 打包前先清空输出文件夹
     clean: true,
   },
@@ -108,7 +106,7 @@ module.exports = {
                 loader: "thread-loader",
                 options: {
                   works: process, // 开启多进程 对bable进行处理
-                }
+                },
               },
               {
                 loader: "babel-loader",
@@ -117,24 +115,24 @@ module.exports = {
                   cacheDirectory: true, // 开启babel缓存
                   cacheCompression: false, // 关闭缓存文件压缩
                   plugins: [
-                    "@babel/plugin-transform-runtime" // 减少代码体积  减少重复的辅助代码定义
-                  ]
+                    "@babel/plugin-transform-runtime", // 减少代码体积  减少重复的辅助代码定义
+                  ],
                 },
               },
-            ]
+            ],
           },
           // html中img处理
           {
             test: /\.(htm|html)$/i,
             use: {
-              loader: 'html-withimg-loader',
+              loader: "html-withimg-loader",
               options: {
-                esModule: false
-              }
-            }
+                esModule: false,
+              },
+            },
           },
-        ]
-      }
+        ],
+      },
     ],
   },
   // 插件
@@ -156,53 +154,53 @@ module.exports = {
     //     parallel: process, // 开启多进程 压缩js
     //   }
     // ),
-
   ],
 
-  // 压缩相关 webpack5 推荐
+  // 优化相关 webpack5 推荐
   optimization: {
+    // 压缩相关
     minimizer: [
       // 压缩css
       new CssMinimizerPlugin(),
       // 压缩js
-      new TerserWebpackPlugin(
-        {
-          parallel: process, // 开启多进程 压缩js
-        }
-      ),
+      new TerserWebpackPlugin({
+        parallel: process, // 开启多进程 压缩js
+      }),
       // 压缩图片
-      new ImageMinimizerPlugin({
-        minimizer: {
-          implementation: ImageMinimizerPlugin.imageminGenerate,  // 共有imageminMinify和squooshMinify两种模式
-          options: {
-            plugins: [
-              ["gifsicle", { interlaced: true }],
-              ["jpegtran", { progressive: true }],
-              ["optipng", { optimizationLevel: 5 }],
-              ["svgo", {
-                plugins: [
-                  'preset-default',
-                  'prefixIds',
-                  {
-                    name: "sortAttrs",
-                    params: {
-                      xmlnsOrder: "alphabetical"
-                    }
-                  }
-                ],
-              },
-              ],
+      // new ImageMinimizerPlugin({
+      //   minimizer: {
+      //     implementation: ImageMinimizerPlugin.imageminGenerate,  // 共有imageminMinify和squooshMinify两种模式
+      //     options: {
+      //       plugins: [
+      //         ["gifsicle", { interlaced: true }],
+      //         ["jpegtran", { progressive: true }],
+      //         ["optipng", { optimizationLevel: 5 }],
+      //         ["svgo", {
+      //           plugins: [
+      //             'preset-default',
+      //             'prefixIds',
+      //             {
+      //               name: "sortAttrs",
+      //               params: {
+      //                 xmlnsOrder: "alphabetical"
+      //               }
+      //             }
+      //           ],
+      //         },
+      //         ],
 
-            ],
-          },
-        },
-      })
-
-
-    ]
+      //       ],
+      //     },
+      //   },
+      // })
+    ],
+    // js分割
+    splitChunks: {
+      chunks: "all",
+    },
   },
   // 模式
   mode: "production",
   // 指出错误在源文件的哪一行哪一列
-  devtool: "source-map"
+  devtool: "source-map",
 };
