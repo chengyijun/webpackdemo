@@ -41,7 +41,9 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "../dist"),
     filename: "static/js/main.js",
-    chunkFilename: "static/js/[name].js",
+    chunkFilename: "static/js/[name].chunk.js",
+    // 统一对其他资源（图片 字体等）处理命名
+    assetModuleFilename: "static/media/[hash:10][ext][query]",
     // 打包前先清空输出文件夹
     clean: true,
   },
@@ -81,19 +83,19 @@ module.exports = {
                 maxSize: 10 * 1024, // 10kb
               },
             },
-            generator: {
-              // 生成图片的名称
-              filename: "static/images/[hash:10][ext][query]",
-            },
+            // generator: {
+            //   // 生成图片的名称
+            //   filename: "static/images/[hash:10][ext][query]",
+            // },
           },
           // 处理资源文件 类型不够就追加
           {
             test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
             type: "asset/resource",
-            generator: {
-              // 生成图片的名称
-              filename: "static/media/[hash:10][ext][query]",
-            },
+            // generator: {
+            //   // 生成图片的名称
+            //   filename: "static/media/[hash:10][ext][query]",
+            // },
           },
           // babel js兼容性处理
           {
@@ -144,6 +146,7 @@ module.exports = {
     // 单独打包css文件 而不是嵌入到js中
     new MiniCssExtractPlugin({
       filename: "static/css/main.css",
+      chunkFilename: "static/css/[name].chunk.css",
     }),
     // 以下是压缩相关  webpack4的写的位置 不推荐了
     // // 压缩css
