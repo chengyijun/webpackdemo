@@ -1,9 +1,11 @@
 const os = require("os")
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");           // html打包插件
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");    // css单独打包插件
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin"); // css压缩插件
-const TerserWebpackPlugin = require("terser-webpack-plugin");       // js压缩插件
+const HtmlWebpackPlugin = require("html-webpack-plugin");                     // html打包插件
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");              // css单独打包插件
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");           // css压缩插件
+const TerserWebpackPlugin = require("terser-webpack-plugin");                 // js压缩插件
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");       // 图片压缩插件
+
 
 
 // 获取CPU个数 为下面开启多进程使用
@@ -114,6 +116,9 @@ module.exports = {
                   // presets: ["@babel/preset-env"],
                   cacheDirectory: true, // 开启babel缓存
                   cacheCompression: false, // 关闭缓存文件压缩
+                  plugins: [
+                    "@babel/plugin-transform-runtime" // 减少代码体积  减少重复的辅助代码定义
+                  ]
                 },
               },
             ]
@@ -151,6 +156,7 @@ module.exports = {
     //     parallel: process, // 开启多进程 压缩js
     //   }
     // ),
+
   ],
 
   // 压缩相关 webpack5 推荐
@@ -164,6 +170,35 @@ module.exports = {
           parallel: process, // 开启多进程 压缩js
         }
       ),
+      // 压缩图片
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminGenerate,  // 共有imageminMinify和squooshMinify两种模式
+          options: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["jpegtran", { progressive: true }],
+              ["optipng", { optimizationLevel: 5 }],
+              ["svgo", {
+                plugins: [
+                  'preset-default',
+                  'prefixIds',
+                  {
+                    name: "sortAttrs",
+                    params: {
+                      xmlnsOrder: "alphabetical"
+                    }
+                  }
+                ],
+              },
+              ],
+
+            ],
+          },
+        },
+      })
+
+
     ]
   },
   // 模式
