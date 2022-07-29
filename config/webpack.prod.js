@@ -95,6 +95,17 @@ module.exports = {
           // },
         },
       },
+      // html中img处理
+      {
+        test: /\.(htm|html)$/i,
+        use: {
+          loader: 'html-withimg-loader',
+          options: {
+            esModule: false
+          }
+        }
+      },
+
     ],
   },
   // 插件
