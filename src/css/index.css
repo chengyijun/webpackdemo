@@ -2,7 +2,7 @@
   display: flex;
   background-color: pink;
   width: 400px;
-  height: 400px;
+  height: 200px;
   background-image: url("../images/bg.jpg");
   background-size: cover;
 }

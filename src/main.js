@@ -12,3 +12,13 @@ import "./css/iconfont.css";
 
 console.log(add1(1, 2));
 console.log(add2(3, 7));
+
+
+// js默认是不能热更新的  所以需要手动
+// accpet() 第二个参数可以接受一个回调函数
+if (module.hot) {
+    module.hot.accept("./js/m1.js")
+    module.hot.accept("./js/m2.js", function () {
+        console.log("m2模块更新了");
+    })
+}

@@ -15,71 +15,80 @@ module.exports = {
   // 加载器
   module: {
     rules: [
-      // loader的配置
       {
-        test: /\.css$/i,
-        // loader 会从右往左执行
-        // css-loader 会将css生成commonjs模块到js中
-        // style-loader 会在index.html中动态插入style标签 展示效果
-        use: ["style-loader", "css-loader"],
-      },
-      {
-        test: /\.less$/i,
-        use: ["style-loader", "css-loader", "less-loader"],
-      },
-      {
-        test: /\.s[ac]ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
-      },
-      {
-        test: /\.styl$/i,
-        use: ["style-loader", "css-loader", "stylus-loader"],
-      },
-      // 处理图片
-      {
-        test: /\.(png|jpe?g|webp|gif|svg|bmp)$/,
-        type: "asset",
-        parser: {
-          dataUrlCondition: {
-            //   小于下面的kb 就会转base64格式  大于则不转换
-            maxSize: 10 * 1024, // 10kb
+        // loader 通过正则匹配命中之后  就不再继续向下匹配了 提高性能
+        oneOf: [
+          // loader的配置
+          {
+            test: /\.css$/i,
+            // loader 会从右往左执行
+            // css-loader 会将css生成commonjs模块到js中
+            // style-loader 会在index.html中动态插入style标签 展示效果
+            use: ["style-loader", "css-loader"],
           },
-        },
-        generator: {
-          // 生成图片的名称
-          filename: "static/images/[hash:10][ext][query]",
-        },
-      },
-      // 处理资源文件 类型不够就追加
-      {
-        test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
-        type: "asset/resource",
-        generator: {
-          // 生成图片的名称
-          filename: "static/media/[hash:10][ext][query]",
-        },
-      },
-      // babel兼容性处理
-      {
-        test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: "babel-loader",
-          // options: {
-          //   presets: ["@babel/preset-env"],
-          // },
-        },
-      },
-      // html中img处理
-      {
-        test: /\.(htm|html)$/i,
-        use: {
-          loader: 'html-withimg-loader',
-          options: {
-            esModule: false
-          }
-        }
-      },
+          {
+            test: /\.less$/i,
+            use: ["style-loader", "css-loader", "less-loader"],
+          },
+          {
+            test: /\.s[ac]ss$/i,
+            use: ["style-loader", "css-loader", "sass-loader"],
+          },
+          {
+            test: /\.styl$/i,
+            use: ["style-loader", "css-loader", "stylus-loader"],
+          },
+          // 处理图片
+          {
+            test: /\.(png|jpe?g|webp|gif|svg|bmp)$/,
+            type: "asset",
+            parser: {
+              dataUrlCondition: {
+                //   小于下面的kb 就会转base64格式  大于则不转换
+                maxSize: 10 * 1024, // 10kb
+              },
+            },
+            generator: {
+              // 生成图片的名称
+              filename: "static/images/[hash:10][ext][query]",
+            },
+          },
+          // 处理资源文件 类型不够就追加
+          {
+            test: /\.(ttf|woff2?|mp3|mp4|avi)$/,
+            type: "asset/resource",
+            generator: {
+              // 生成图片的名称
+              filename: "static/media/[hash:10][ext][query]",
+            },
+          },
+          // babel兼容性处理
+          {
+            test: /\.js$/,
+            // exclude include 互斥的 只能存在一个
+            // exclude: /(node_modules|bower_components)/,
+            include: path.resolve(__dirname, "../src"),
+            use: {
+              loader: "babel-loader",
+              options: {
+                // presets: ["@babel/preset-env"],
+                cacheDirectory: true, // 开启babel缓存
+                cacheCompression: false, // 关闭缓存文件压缩
+              },
+            },
+          },
+          // html中img处理
+          {
+            test: /\.(htm|html)$/i,
+            use: {
+              loader: 'html-withimg-loader',
+              options: {
+                esModule: false
+              }
+            }
+          },
+        ]
+      }
     ],
   },
   // 插件
@@ -95,7 +104,10 @@ module.exports = {
     host: "localhost",
     port: "3000",
     open: true,
+    hot: true, // 热更新 hot module replace (HMR) 默认是开启的
   },
   // 模式
   mode: "development",
+  // 指出错误在源文件的哪一行 而不是编译后文件的哪一行
+  devtool: "cheap-module-source-map"
 };
