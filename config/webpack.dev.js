@@ -1,6 +1,8 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const os = require("os")
 const path = require("path");
-
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+// 获取CPU个数 为下面开启多进程使用
+const process = os.cpus().length
 module.exports = {
   // 入口 要求相对路径
   entry: "./src/main.js",
@@ -68,14 +70,22 @@ module.exports = {
             // exclude include 互斥的 只能存在一个
             // exclude: /(node_modules|bower_components)/,
             include: path.resolve(__dirname, "../src"),
-            use: {
-              loader: "babel-loader",
-              options: {
-                // presets: ["@babel/preset-env"],
-                cacheDirectory: true, // 开启babel缓存
-                cacheCompression: false, // 关闭缓存文件压缩
+            use: [
+              {
+                loader: "thread-loader",
+                options: {
+                  works: process, // 开启多进程 对bable进行处理
+                }
               },
-            },
+              {
+                loader: "babel-loader",
+                options: {
+                  // presets: ["@babel/preset-env"],
+                  cacheDirectory: true, // 开启babel缓存
+                  cacheCompression: false, // 关闭缓存文件压缩
+                },
+              },
+            ]
           },
           // html中img处理
           {

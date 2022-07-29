@@ -1,7 +1,15 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const os = require("os")
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");           // html打包插件
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");    // css单独打包插件
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin"); // css压缩插件
+const TerserWebpackPlugin = require("terser-webpack-plugin");       // js压缩插件
+
+
+// 获取CPU个数 为下面开启多进程使用
+const process = os.cpus().length
+// console.log(threads);
+
 
 /**
  * css-loader 被多处使用  所以在此封装成一个函数 进行复用
@@ -93,14 +101,22 @@ module.exports = {
             // exclude include 互斥的 只能存在一个
             // exclude: /(node_modules|bower_components)/,
             include: path.resolve(__dirname, "../src"),
-            use: {
-              loader: "babel-loader",
-              options: {
-                // presets: ["@babel/preset-env"],
-                cacheDirectory: true, // 开启babel缓存
-                cacheCompression: false, // 关闭缓存文件压缩
+            use: [
+              {
+                loader: "thread-loader",
+                options: {
+                  works: process, // 开启多进程 对bable进行处理
+                }
               },
-            },
+              {
+                loader: "babel-loader",
+                options: {
+                  // presets: ["@babel/preset-env"],
+                  cacheDirectory: true, // 开启babel缓存
+                  cacheCompression: false, // 关闭缓存文件压缩
+                },
+              },
+            ]
           },
           // html中img处理
           {
@@ -126,10 +142,30 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "static/css/main.css",
     }),
-    // 压缩css
-    new CssMinimizerPlugin(),
+    // 以下是压缩相关  webpack4的写的位置 不推荐了
+    // // 压缩css
+    // new CssMinimizerPlugin(),
+    // // 压缩js
+    // new TerserWebpackPlugin(
+    //   {
+    //     parallel: process, // 开启多进程 压缩js
+    //   }
+    // ),
   ],
 
+  // 压缩相关 webpack5 推荐
+  optimization: {
+    minimizer: [
+      // 压缩css
+      new CssMinimizerPlugin(),
+      // 压缩js
+      new TerserWebpackPlugin(
+        {
+          parallel: process, // 开启多进程 压缩js
+        }
+      ),
+    ]
+  },
   // 模式
   mode: "production",
   // 指出错误在源文件的哪一行哪一列
